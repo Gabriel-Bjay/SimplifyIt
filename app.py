@@ -5,32 +5,27 @@ from validation import validate_step_input
 from utils import show_summary
 
 
-class NHIFApplication(tk.Tk):
-    def __init__(self):
+class SimplifyItApp(tk.Tk):
+    def __init__(self, service_name):
         super().__init__()
-        self.title("SimplifyIt - NHIF Assistant")
-        self.geometry("500x300")
-        self.resizable(False, False)
+        self.title(f"SimplifyIt - {service_name} Assistant")
+        self.geometry("550x320")
+        self.configure(bg="#f5f5f5")
 
-        # name, ID, phone, employment, documents
-        self.user_data = [
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
+        self.service = service_name
+        self.user_data = [""] * 5
         self.frames = []
         self.current_step = 0
 
         self.name_entry = None
         self.id_entry = None
         self.phone_entry = None
+        self.email_entry = None
+        self.kra_entry = None
         self.employment_status = tk.StringVar()
         self.upload_var = tk.IntVar()
 
-        self.frames = create_step_frames(self)
-
+        self.frames = create_step_frames(self, self.service)
         self.show_frame(0)
 
     def show_frame(self, index):
@@ -39,7 +34,7 @@ class NHIFApplication(tk.Tk):
         self.frames[index].pack(fill="both", expand=True)
 
     def next_step(self):
-        if not validate_step_input(self):
+        if not validate_step_input(self, self.service):
             return
         self.current_step += 1
         self.show_frame(self.current_step)
@@ -50,9 +45,12 @@ class NHIFApplication(tk.Tk):
             self.show_frame(self.current_step)
 
     def submit(self):
-        if self.upload_var.get() == 0:
+        if self.service == "NHIF" and self.upload_var.get() == 0:
             messagebox.showerror("Error", "Please confirm document upload.")
             return
-        self.user_data[4] = "Uploaded"
-        show_summary(self.user_data)
+        if self.service == "NHIF":
+            self.user_data[4] = "Uploaded"
+        else:
+            self.user_data[4] = self.kra_entry.get()
+        show_summary(self.user_data, self.service)
         self.quit()
